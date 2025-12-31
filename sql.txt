@@ -1,0 +1,271 @@
+-- =========================
+-- TABEL WILAYAH
+-- =========================
+CREATE TABLE wilayah (
+    id INT NOT NULL AUTO_INCREMENT,
+    nama_wilayah VARCHAR(100) NOT NULL,
+    keterangan TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);
+
+-- =========================
+-- TABEL JAM KERJA
+-- =========================
+CREATE TABLE jam_kerja (
+    id INT NOT NULL AUTO_INCREMENT,
+    nama_setting VARCHAR(100) DEFAULT 'Default',
+    jam_masuk_standar TIME DEFAULT '08:00:00',
+    jam_pulang_standar TIME DEFAULT '17:00:00',
+    toleransi_keterlambatan TIME DEFAULT '00:15:00',
+    batas_terlambat TIME DEFAULT '09:00:00',
+    is_active TINYINT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);
+
+-- =========================
+-- TABEL USERS
+-- =========================
+CREATE TABLE users (
+    id INT NOT NULL AUTO_INCREMENT,
+    nama VARCHAR(100) NOT NULL,
+    tempat_lahir VARCHAR(100) NULL,
+    tanggal_lahir DATE NULL,
+    alamat TEXT NULL,
+    jenis_kelamin ENUM('Laki-laki','Perempuan') NULL,
+    no_hp VARCHAR(20) NULL,
+    pendidikan_terakhir VARCHAR(50) NULL,
+    wilayah_penugasan VARCHAR(100) NULL,
+    wilayah_id INT NULL,
+    jam_kerja_id INT NULL,
+    can_remote TINYINT DEFAULT 0,
+    jabatan VARCHAR(100) NULL,
+    status ENUM('Aktif','Nonaktif') DEFAULT 'Aktif',
+    is_active TINYINT DEFAULT 1,
+    roles ENUM('admin','atasan','pegawai') DEFAULT 'pegawai',
+    foto VARCHAR(255) NULL,
+    username VARCHAR(50) UNIQUE,
+    password VARCHAR(255) NULL,
+    telegram_id VARCHAR(50) UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX (wilayah_id),
+    INDEX (jam_kerja_id)
+);
+
+-- =========================
+-- TABEL IZIN
+-- =========================
+CREATE TABLE izin (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    tanggal_mulai DATE NOT NULL,
+    tanggal_selesai DATE NOT NULL,
+    durasi_hari INT NULL,
+    jenis ENUM(
+        'Sakit','Izin','Cuti Tahunan','Cuti Besar',
+        'Cuti Sakit','Cuti Melahirkan','Tugas Luar','Dinas Luar'
+    ) NOT NULL,
+    keterangan VARCHAR(255) NULL,
+    dokumen_pendukung VARCHAR(255) NULL,
+    status ENUM('Pending','Disetujui','Ditolak') DEFAULT 'Pending',
+    updated_by INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX (user_id),
+    INDEX (updated_by)
+);
+
+-- =========================
+-- TABEL PRESENSI
+-- =========================
+CREATE TABLE presensi (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    izin_id INT NULL,
+    tanggal DATE NOT NULL,
+    jam_masuk TIME NULL,
+    foto_masuk LONGTEXT NULL,
+    latitude_masuk DECIMAL(10,8) NULL,
+    longitude_masuk DECIMAL(11,8) NULL,
+    jam_pulang TIME NULL,
+    foto_pulang VARCHAR(255) NULL,
+    latitude_pulang DECIMAL(10,8) NULL,
+    longitude_pulang DECIMAL(11,8) NULL,
+    status_masuk ENUM(
+        'Tepat Waktu','Terlambat','Tanpa Keterangan',
+        'Izin Sakit','Izin Cuti','Izin Lainnya','Izin'
+    ) NULL,
+    status_pulang ENUM(
+        'Tepat Waktu','Cepat Pulang','Lembur','Belum Pulang',
+        'Izin Sakit','Izin Cuti','Izin Lainnya','Izin'
+    ) NULL,
+    is_lembur TINYINT DEFAULT 0,
+    jam_lembur TIME NULL,
+    keterangan VARCHAR(255) NULL,
+    is_system_generated TINYINT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX (user_id),
+    INDEX (izin_id),
+    INDEX (tanggal)
+);
+
+-- =========================
+-- TABEL KINERJA HARIAN
+-- =========================
+CREATE TABLE kinerja_harian (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    tanggal DATE NOT NULL,
+    ruas_jalan VARCHAR(255) NOT NULL,
+    kegiatan TEXT NOT NULL,
+    panjang_kr VARCHAR(50) NOT NULL,
+    panjang_kn VARCHAR(50) NOT NULL,
+    warna_sket JSON NULL,
+    sket_image LONGTEXT NULL,
+    foto_0 VARCHAR(500) NULL,
+    foto_50 VARCHAR(500) NULL,
+    foto_100 VARCHAR(500) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX (user_id),
+    INDEX (tanggal)
+);
+
+-- =========================
+-- TABEL HARI KERJA
+-- =========================
+CREATE TABLE hari_kerja (
+    id INT NOT NULL AUTO_INCREMENT,
+    tanggal DATE NOT NULL,
+    is_hari_kerja TINYINT DEFAULT 1,
+    keterangan VARCHAR(255) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE (tanggal)
+);
+
+-- =========================
+-- TABEL HARI LIBUR
+-- =========================
+CREATE TABLE hari_libur (
+    id INT NOT NULL AUTO_INCREMENT,
+    tanggal DATE NOT NULL,
+    nama_libur VARCHAR(100) NOT NULL,
+    is_tahunan TINYINT DEFAULT 1,
+    tahun YEAR NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE (tanggal)
+);
+
+
+
+INSERT INTO users (
+    id, nama, tempat_lahir, tanggal_lahir, alamat, jenis_kelamin, no_hp,
+    pendidikan_terakhir, wilayah_penugasan, wilayah_id, jam_kerja_id,
+    can_remote, jabatan, status, is_active, roles, foto,
+    username, password, telegram_id, created_at, updated_at
+) VALUES
+(1, 'Admin SIKOPNAS', 'Bondowoso', '2025-11-13', 'Jl.kenangan', 'Laki-laki', '08132884889',
+ 'D3 Teknik Mesin', 'Prajekan', NULL, NULL, 0, 'Administrator', 'Aktif', 1, 'admin',
+ '/uploads/users/1763046484706-6qfnx1lhypj.png', 'admin',
+ '$2b$10$U3M0R4dgtJGQ79gIeiw4IebVWWyZ2ykjAc/PmZE6MnaAGmzypweQ2',
+ NULL, '2025-11-01 16:37:23', '2025-11-13 22:08:04'),
+
+(2, 'Budi Santoso', NULL, NULL, NULL, NULL, NULL,
+ NULL, 'Botolinggo', 2, 3, 0, 'Staff IT', 'Aktif', 1, 'pegawai',
+ NULL, 'budi',
+ '$2b$10$U3M0R4dgtJGQ79gIeiw4IebVWWyZ2ykjAc/PmZE6MnaAGmzypweQ2',
+ NULL, '2025-11-01 16:37:23', '2025-11-11 22:53:54'),
+
+(3, 'Sari Dewi', NULL, NULL, NULL, NULL, NULL,
+ NULL, 'Prajekan', 1, 1, 0, 'Supervisor', 'Aktif', 1, 'atasan',
+ NULL, 'sari',
+ '$2b$10$U3M0R4dgtJGQ79gIeiw4IebVWWyZ2ykjAc/PmZE6MnaAGmzypweQ2',
+ NULL, '2025-11-01 16:37:23', '2025-11-05 20:31:26'),
+
+(4, 'Ahmad Fauzi', NULL, NULL, NULL, NULL, NULL,
+ NULL, 'Botolinggo', 2, 1, 0, 'Operator', 'Aktif', 1, 'pegawai',
+ NULL, 'ahmad',
+ '$2b$10$U3M0R4dgtJGQ79gIeiw4IebVWWyZ2ykjAc/PmZE6MnaAGmzypweQ2',
+ NULL, '2025-11-01 16:37:23', '2025-11-11 22:53:59'),
+
+(5, 'Subianto', 'Bondowosos', '2025-12-01', 'Jl.Mawars', 'Perempuan', '0857849492',
+ 'SMAs', 'Botolinggo', 4, 1, 0, 'Staff Lapangans', 'Aktif', 1, 'pegawai',
+ '/uploads/users/1765273049331-egq1mp1etks.png', 'subianto',
+ '$2a$10$3K.yyST55xPAIwMZcjm95enxpqwRaWQ0TnhvIh35YTskWXgpIKRsK',
+ NULL, '2025-11-02 02:10:26', '2025-12-09 16:37:29'),
+
+(6, 'Andi Wijaya', 'Bondowoso', '2025-11-30', 'Jl. panjaitan', 'Laki-laki', '08182838212',
+ 'SMA', 'Botolinggo', 2, 1, 0, 'Staff Lapangan', 'Aktif', 1, 'pegawai',
+ '/uploads/users/1765281689123-kpzi1uyrp0g.png', 'Andi',
+ '$2a$10$8IuoUIE8v5MtEehUE0zfYeqyFwPuiYjRPH9dUpxBJ5BDSO9OISz7.',
+ NULL, '2025-11-04 22:32:46', '2025-12-09 19:02:11'),
+
+(7, 'Yudo Salim', 'Bondowoso', '2025-10-26', 'd', 'Laki-laki', '08132884889',
+ 'D3 Teknik Mesin', 'Klabang', 3, 1, 0, 'Staff Lapangan', 'Aktif', 1, 'pegawai',
+ '/uploads/users/1762270494187-wq6ujh8jysi.png', 'yudo',
+ '$2a$10$mGtwUWAvooIik/xBogRf0Ohp4KfuZl/kQMoLsFNS6kxRTr3kOgYRa',
+ NULL, '2025-11-04 22:34:54', '2025-11-05 20:31:26'),
+
+(8, 'yiili', NULL, NULL, 's', 'Laki-laki', '08182838212',
+ 'D3 Teknik Mesin', 'Prajekan', 1, 1, 0, 'Staff Lapangan', 'Aktif', 1, 'pegawai',
+ '/uploads/users/1762272472255-v0l8zd28ivc.png', 'yili',
+ '$2a$10$Kf7YmAGrpdw5xdA09I0rt.7Iac.6i2KwUxgfPIeVdHu5nWz1fWL9O',
+ NULL, '2025-11-04 23:07:52', '2025-11-30 16:43:38'),
+
+(10, 'Narto', 'bondos', '2025-12-07', 'narto', 'Laki-laki', '1239',
+ 'sma', 'Prajekan', 1, NULL, 0, 'staff lapangann', 'Aktif', 1, 'pegawai',
+ '/uploads/users/1765274544150-6nppwd3pys.png', 'narto',
+ '$2a$10$rY93dKrLSNrJiPxNnFcHwOEB1lqDv8nqjKHWowq6NL8EvbJGtxvtC',
+ NULL, '2025-12-09 17:02:24', '2025-12-10 12:25:08'),
+
+(13, 'Nartosulaihin', 'Bondowoso', NULL, 'jadskadsk', 'Laki-laki', '032931032',
+ 'SMA', 'Botolinggo', NULL, NULL, 0, 'Staff Lapangan', 'Nonaktif', 0, 'pegawai',
+ '/uploads/users/default.png', 'Nartosulaihin',
+ '$2a$10$HvnzxuIs6B9x8pePJ4.a4.FF4zXPvpaUExICIjrrPuprzAQgQ9aHO',
+ NULL, '2025-12-15 10:03:56', '2025-12-15 10:20:05'),
+
+(14, 'sucipto canda', 'Jember', '2025-12-11', 'jladsnkads', 'Laki-laki', '4211240912948',
+ 'SMA', 'Prajekan', NULL, NULL, 0, 'Staff Lapangan', 'Aktif', 1, 'pegawai',
+ '/uploads/users/user_1765767889164_q4kuhtw00ug.jpeg', 'Sucipto',
+ '$2a$10$bYydWgLUaUovsI4SmbDKkuUgM9NGMfyT5OYUu6pcQPsgiNHL2sPVa',
+ NULL, '2025-12-15 10:04:49', '2025-12-15 10:04:49');
+
+
+
+INSERT INTO wilayah (
+    id,
+    nama_wilayah,
+    keterangan,
+    created_at
+) VALUES
+(1, 'Prajekan', 'Sepanjang Jalan Wilayah Prajekan', '2025-11-01 16:37:23'),
+(2, 'Botolinggo', 'Sepanjang Jalan Wilayah Botolinggo', '2025-11-01 16:37:23'),
+(3, 'Klabang', 'Sepanjang Jalan Wilayah Klabang', '2025-11-01 16:37:23'),
+(4, 'Cermee', 'Sepanjang Jalan Wilayah Cermee', '2025-11-01 16:37:23');
+
+
+
+
+INSERT INTO jam_kerja (
+    id,
+    nama_setting,
+    jam_masuk_standar,
+    jam_pulang_standar,
+    toleransi_keterlambatan,
+    batas_terlambat,
+    is_active,
+    created_at
+) VALUES
+(1, 'Default', '08:00:00', '17:00:00', '00:15:00', '09:00:00', 1, '2025-11-01 16:37:23'),
+(2, 'Flexible', '09:00:00', '18:00:00', '00:30:00', '09:45:00', 1, '2025-11-01 16:37:23'),
+(3, 'Shift Pagi', '07:00:00', '16:00:00', '00:15:00', '08:00:00', 1, '2025-11-01 16:37:23'),
+(4, 'Shift Siang', '15:41:00', '20:41:00', '15:48:00', '16:04:00', 1, '2025-11-01 16:37:23');
